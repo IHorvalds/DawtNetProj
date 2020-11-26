@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading;
 using System.Web;
@@ -18,7 +19,6 @@ namespace DawtNetProject.Models
         public virtual ICollection<Domain> Domains { get; set; }
         public virtual Version CurrentVersion { get; set; }
         public virtual ICollection<Version> Versions { get; set; }
-
-        public IEnumerable<SelectListItem> AllDomains { get; set; }
+        public virtual ICollection<Comment> Comments { get; set; }
     }
 }

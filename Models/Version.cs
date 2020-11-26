@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DawtNetProject.Models
 {
@@ -11,9 +11,7 @@ namespace DawtNetProject.Models
     {
         [Key]
         public int Id { get; set; }
-        [Required]
-        public int VersionNumber { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Articolul trebuie sa aiba un titlu.")]
         public string Title { get; set; }
         [Required]
         public string ContentPath { get; set; }

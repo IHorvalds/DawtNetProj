@@ -35,10 +35,12 @@ namespace DawtNetProject.Models
             return View(domain);
         }
 
-        // GET: Domains/Create
+        // GET
         public ActionResult Create()
         {
-            return View();
+            Domain d = new Domain();
+
+            return View(d);
         }
 
         // POST: Domains/Create
@@ -48,6 +50,7 @@ namespace DawtNetProject.Models
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "Id,Title,Description,LastEdit")] Domain domain)
         {
+            domain.LastEdit = DateTime.Now;
             if (ModelState.IsValid)
             {
                 db.Domains.Add(domain);
@@ -80,6 +83,7 @@ namespace DawtNetProject.Models
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "Id,Title,Description,LastEdit")] Domain domain)
         {
+            domain.LastEdit = DateTime.Now;
             if (ModelState.IsValid)
             {
                 db.Entry(domain).State = EntityState.Modified;

@@ -1,31 +1,60 @@
-﻿@model DawtNetProject.Models.Article
+﻿@model DawtNetProject.Models.ArticleVersionViewModel
 
 @{
-    ViewBag.Title = "Create";
+    ViewBag.Title = "New Article";
 }
 
-<h2>Create</h2>
+<div class="d-flex flex-row align-items-start justify-content-between">
+    <h2 class="mb-0">Write or upload a new article</h2>
+    <input id="submit_article" type="submit" value="Done" class="btn btn-primary" />
+</div>
 
-
-@using (Html.BeginForm()) 
+@if (ViewBag.Message != null)
 {
+    <p class="text-danger">@ViewBag.Message</p>
+}
+
+
+@using (Html.BeginForm(actionName: "Create", controllerName: "Articles", FormMethod.Post,
+                        new { enctype = "multipart/form-data" }))
+{
+    @Html.ValidationMessage("OneOfTwoFieldsShouldBeFilled")
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
-        <h4>Article</h4>
         <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
         <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
+            <div class="col-md-offset-2 col-md-12">
                 @Html.Label("Title")
-                @Html.TextBox("Title", "")
-                @Html.Label("Domain")
-                @Html.DropDownListFor(m => m.Domains, new SelectList(Model.AllDomains, "Value", "Text"), "Select the domains",
-                                                         new { @class = "form-control" })
+                <br />
+                @Html.TextBox("Title", null, new { @class = "form-control col-md-8" })
+                @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+                <br />
+                <br />
+                @Html.Label("Domains")
+                <br />
+                @Html.ListBoxFor(m => m.DomainIds, new MultiSelectList(Model.AllDomains, "Value", "Text"), new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.DomainIds, "", new { @class = "text-danger" })
+                <br />
                 @Html.Label("Content")
-                @Html.TextArea("Content")
-                <input type="submit" value="Create" class="btn btn-default" />
+                <br />
+                <div class="text-black-50 col-md-8">
+                    You can type your article in the text box or upload it as an md file.<br />
+                    If you upload a file, we will disregard the text contents of the content text box.
+                </div>
+                <br />
+                @*Sursa - https://www.w3schools.com/bootstrap4/bootstrap_forms_custom.asp*@
+                <div class="custom-file col-md-8">
+                    <input type="file" class="custom-file-input" id="customFile" name="ContentFile">
+                    <label class="custom-file-label" for="customFile">Choose file</label>
+                </div>
+                <br />
+                <br />
+                @Html.TextArea("Content", new { @id = "content_textarea", @class = "col-md-12" })
             </div>
+            <br />
+            <input type="submit" value="Done" class="btn btn-primary" />
         </div>
     </div>
 }
@@ -36,4 +65,5 @@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/create-article")
 }

@@ -15,10 +15,10 @@ namespace DawtNetProject.Data
         // For more information refer to the documentation:
         // http://msdn.microsoft.com/en-us/data/jj591621.aspx
     
-        public App_Context() : base("App_Context")
+        public App_Context() : base("DBConnectionString")
         {
             Database.SetInitializer(new MigrateDatabaseToLatestVersion<App_Context,
-                                    DawtNetProject.Migrations.Configuration>("App_Context"));
+                                    DawtNetProject.Migrations.Configuration>("DBConnectionString"));
         }
 
         public System.Data.Entity.DbSet<DawtNetProject.Models.Article> Articles { get; set; }
@@ -26,5 +26,7 @@ namespace DawtNetProject.Data
         public System.Data.Entity.DbSet<DawtNetProject.Models.Domain> Domains { get; set; }
 
         public System.Data.Entity.DbSet<DawtNetProject.Models.Version> Versions { get; set; }
+
+        public System.Data.Entity.DbSet<DawtNetProject.Models.Comment> Comments { get; set; }
     }
 }

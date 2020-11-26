@@ -10,6 +10,8 @@
         public Configuration()
         {
             AutomaticMigrationsEnabled = true;
+            AutomaticMigrationDataLossAllowed = true;
+            ContextKey = "DawtNetProject.App_Context";
         }
 
         protected override void Seed(DawtNetProject.Data.App_Context context)

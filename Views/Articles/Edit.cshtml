@@ -1,26 +1,66 @@
-﻿@model DawtNetProject.Models.Article
+﻿@model DawtNetProject.Models.ArticleVersionViewModel
 
-@{
-    ViewBag.Title = "Edit";
-}
 
-<h2>Edit</h2>
+
+<h2>Edit your article</h2>
 
 
 @using (Html.BeginForm())
 {
+    @Html.ValidationMessage("ArticleNotFound")
+    @Html.ValidationMessage("OneOfTwoFieldsShouldBeFilled")
     @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>Article</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.Id)
 
+    if (ViewBag.articleId != null)
+    {
+        <input type="hidden" name="articleId" value="@ViewBag.articleId" />
+    }
+
+    <div class="form-horizontal">
+        <hr />
+        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
         <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
+            <div class="col-md-offset-2 col-md-12">
+                @Html.Label("Title")
+                <br />
+                @Html.TextBox("Title", null, new { @class = "form-control col-md-8" })
+                @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+                <br />
+                <br />
+                <div class="col-m-8">
+                    @if (Model.Domains != null)
+                    {
+                        @Html.Label("Domain")
+                        <br />
+                        List<string> domains = new List<string>();
+                        foreach (var d in Model.Domains)
+                        {
+                            domains.Add(d.Title);
+                        }
+                        <span>@String.Join(" | ", domains)</span>
+                    }
+                </div>
+                @Html.ListBoxFor(m => m.DomainIds, new MultiSelectList(@Model.AllDomains, "Value", "Text", @Model.DomainIds), new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.DomainIds, "", new { @class = "text-danger" })
+                <br />
+                @Html.Label("Content")
+                <br />
+                <div class="text-black-50 col-md-8">
+                    You can type your article in the text box or upload it as an md file.<br />
+                    If you upload a file, we will disregard the text contents of the content text box.
+                </div>
+                <br />
+                @*Sursa - https://www.w3schools.com/bootstrap4/bootstrap_forms_custom.asp*@
+                <div class="custom-file col-md-8">
+                    <input type="file" class="custom-file-input" id="customFile" name="ContentFile">
+                    <label class="custom-file-label" for="customFile">Choose file</label>
+                </div>
+                <br />
+                <br />
+                @Html.TextArea("Content", new { @id = "content_textarea", @class = "col-md-12" })
             </div>
+            <br />
+            <input type="submit" value="Edit" class="btn btn-primary" />
         </div>
     </div>
 }

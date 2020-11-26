@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace DawtNetProject.Models
@@ -11,9 +10,9 @@ namespace DawtNetProject.Models
     {
         [Key]
         public int Id { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Domain must have a name.")]
         public string Title { get; set; }
-        [Required]
+        [Required(ErrorMessage = "A description is also necessary.")]
         public string Description { get; set; }
         public DateTime LastEdit { get; set; }
 

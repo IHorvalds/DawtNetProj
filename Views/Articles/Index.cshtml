@@ -1,14 +1,17 @@
 ﻿@model IEnumerable<DawtNetProject.Models.Article>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "All available articles";
 }
-
-<h2>Index</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
+<div class="d-flex flex-row align-items-start">
+    <div class="d-flex flex-column mr-3">
+        <h2 class="mb-0">Here are all the articles</h2>
+        <h5>Stand on the shoulders of giants.</h5>
+    </div>
+    <div class="p-2">
+        @Html.ActionLink("Add another article", "Create" , new { @area = "" }, new { @class = "btn btn-primary" })
+    </div>
+</div>
 <table class="table">
     <tr>
         <th></th>
@@ -16,6 +19,9 @@
 
 @foreach (var item in Model) {
     <tr>
+        <td>
+            @item.CurrentVersion.Title
+        </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
             @Html.ActionLink("Details", "Details", new { id=item.Id }) |

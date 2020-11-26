@@ -211,24 +211,26 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202011071318480_Initial.cs" />
-    <Compile Include="Migrations\202011071318480_Initial.designer.cs">
-      <DependentUpon>202011071318480_Initial.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Article.cs" />
     <Compile Include="Controllers\ArticlesController.cs" />
     <Compile Include="Models\ArticleVersionViewModel.cs" />
+    <Compile Include="Models\Comment.cs" />
+    <Compile Include="Controllers\CommentsController.cs" />
     <Compile Include="Models\Domain.cs" />
     <Compile Include="Controllers\DomainsController.cs" />
     <Compile Include="Models\Version.cs" />
-    <Compile Include="Models\VersionsController.cs" />
+    <Compile Include="Controllers\VersionsController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\Database1.mdf" />
     <Content Include="App_Data\Database1_log.ldf">
       <DependentUpon>Database1.mdf</DependentUpon>
+    </Content>
+    <Content Include="App_Data\DawtNetDB.mdf" />
+    <Content Include="App_Data\DawtNetDB_log.ldf">
+      <DependentUpon>DawtNetDB.mdf</DependentUpon>
     </Content>
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -244,6 +246,7 @@
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\create-article.js" />
     <Content Include="Scripts\esm\popper-utils.js" />
     <Content Include="Scripts\esm\popper-utils.min.js" />
     <Content Include="Scripts\esm\popper.js" />
@@ -384,8 +387,16 @@
     <Content Include="Views\Versions\Details.cshtml" />
     <Content Include="Views\Versions\Edit.cshtml" />
     <Content Include="Views\Versions\Index.cshtml" />
+    <Content Include="Views\Comments\Create.cshtml" />
+    <Content Include="Views\Comments\Delete.cshtml" />
+    <Content Include="Views\Comments\Details.cshtml" />
+    <Content Include="Views\Comments\Edit.cshtml" />
+    <Content Include="Views\Comments\Index.cshtml" />
+    <Content Include="Views\Shared\Header.cshtml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="article_files\" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.5.1.slim.min.map" />
@@ -396,11 +407,6 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\202011071318480_Initial.resx">
-      <DependentUpon>202011071318480_Initial.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
