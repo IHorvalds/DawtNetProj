@@ -34,6 +34,31 @@
             @Html.DisplayFor(model => model.LastEdit)
         </dd>
 
+        <dt>
+            @Html.DisplayNameFor(model => model.Articles)
+        </dt>
+
+        <dd>
+            @if (Model.Articles != null)
+            {
+                foreach (var article in Model.Articles)
+                {
+                    <tr>
+                        <td>
+                            @article.CurrentVersion.Title
+                        </td>
+                        <td>
+                            @Html.ActionLink("Edit", "Edit", new { id = article.Id }) |
+                            @Html.ActionLink("Details", "Details", new { id = article.Id }) |
+                            @Html.ActionLink("Delete", "Delete", new { id = article.Id })
+                        </td>
+                    </tr>
+                }
+            } else
+            {
+                <p>None yet.</p>
+            }
+        </dd>
     </dl>
 </div>
 <p>

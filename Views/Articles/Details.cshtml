@@ -1,13 +1,25 @@
 ﻿@model DawtNetProject.Models.Article
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = Model.CurrentVersion.Title;
 }
 
-<h2>Details</h2>
+<h2>@Model.CurrentVersion.Title</h2>
 
 <div>
-    <h4>Article</h4>
+    <div class="cold-m-4">
+        <h4>
+            @if (Model.Domains != null)
+            {
+                List<string> domains = new List<string>();
+                foreach(var d in Model.Domains)
+                {
+                    domains.Add(d.Title);
+                }
+                <span>@String.Join(" | ", domains)</span>
+            }
+        </h4>
+    </div>
     <hr />
     <dl class="dl-horizontal">
     </dl>
@@ -16,3 +28,35 @@
     @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
     @Html.ActionLink("Back to List", "Index")
 </p>
+<div class="container">
+    <div class="col-m-12">
+        @if (ViewBag.content != null)
+        {
+            @ViewBag.content;
+        }
+    </div>
+
+    @if (Model.Comments != null && Model.Comments.Count() > 0)
+    {
+        <hr />
+        <h4>Comments</h4>
+        <table>
+            @foreach (var comment in Model.Comments)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => comment.Content)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => comment.LastEdit)
+                    </td>
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", new { id = comment.Id }) |
+                        @Html.ActionLink("Details", "Details", new { id = comment.Id }) |
+                        @Html.ActionLink("Delete", "Delete", new { id = comment.Id })
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+</div>
