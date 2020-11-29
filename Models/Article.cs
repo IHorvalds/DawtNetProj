@@ -12,13 +12,14 @@ namespace DawtNetProject.Models
     public class Article // id, title, desc, last_edit
     {
         [Key]
-        public int Id { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ArticleId { get; set; }
         public bool ProtectFromEditing { get; set; }
         
-
+        [Required]
         public virtual ICollection<Domain> Domains { get; set; }
-        public virtual Version CurrentVersion { get; set; }
-        public virtual ICollection<Version> Versions { get; set; }
+        [Required]
+        public int CurrentVersionId { get; set; }
         public virtual ICollection<Comment> Comments { get; set; }
     }
 }

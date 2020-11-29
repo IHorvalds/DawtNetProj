@@ -7,21 +7,14 @@
 <h2>Create</h2>
 
 
-@using (Html.BeginForm()) 
+@using (Html.BeginForm("Create", "Versions", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
+                @Html.AntiForgeryToken()
+
+                <div class="form-horizontal">
         <h4>Version</h4>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.VersionNumber, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.VersionNumber, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.VersionNumber, "", new { @class = "text-danger" })
-            </div>
-        </div>
 
         <div class="form-group">
             @Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label col-md-2" })
@@ -31,17 +24,30 @@
             </div>
         </div>
 
+
         <div class="form-group">
-            @Html.LabelFor(model => model.ContentPath, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Article, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ContentPath, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.ContentPath, "", new { @class = "text-danger" })
+                @Html.DropDownListFor(m => m.SelectedArticle, new SelectList(Model.AllArticles, "Value", "Text"), htmlAttributes: new { @class = "control-label col-md-2" })
             </div>
         </div>
 
         <div class="form-group">
+            @Html.LabelFor(model => model.ContentPath, htmlAttributes: new { @class = "control-label col-md-2" })
+            @*Sursa - https://www.w3schools.com/bootstrap4/bootstrap_forms_custom.asp*@
+            <div class="col-md-10">
+                <div class="custom-file col-md-6 form-control">
+                    @Html.TextBoxFor(m => m.UploadFile, new { type = "file" })
+                    <input type="file" class="custom-file-input" name="UploadFile">
+                    @*<label class="custom-file-label" for="customFile">Choose file</label>*@
+                </div>
+            </div>
+            @Html.ValidationMessageFor(model => model.ContentPath, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </div>
     </div>
@@ -53,4 +59,5 @@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/create-article")
 }

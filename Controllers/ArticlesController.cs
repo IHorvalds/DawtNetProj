@@ -8,19 +8,35 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using DawtNetProject.Data;
+using Markdig;
 
 namespace DawtNetProject.Models
 {
     public class ArticlesController : Controller
     {
         private App_Context db = new App_Context();
+        MarkdownPipeline pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
 
         // GET: Articles
         public ActionResult Index()
         {
-            var articles = from article in db.Articles.Include("Versions")
+            var articles = from article in db.Articles
                            select article;
-            return View(articles.ToList());
+            List<ArticleVersionViewModel> avs = new List<ArticleVersionViewModel>();
+            var articlesList = articles.ToList();
+            foreach(var article in articlesList)
+            {
+                ArticleVersionViewModel av = new ArticleVersionViewModel();
+                Version v = db.Versions.Find(article.CurrentVersionId);
+                av.ArticleId = article.ArticleId;
+                av.VersionId = article.CurrentVersionId;
+                av.Title = v.Title;
+                av.Content = System.IO.File.ReadAllText(v.ContentPath, System.Text.Encoding.UTF8);
+                av.Domains = article.Domains;
+                avs.Add(av);
+            }
+
+            return View(avs);
         }
 
         // GET: Articles/Details/5
@@ -36,14 +52,19 @@ namespace DawtNetProject.Models
                 return HttpNotFound();
             }
 
-            Version v = article.CurrentVersion;
+            Version v = db.Versions.Find(article.CurrentVersionId);
+            ArticleVersionViewModel av = new ArticleVersionViewModel();
+            av.Title = v.Title;
+            av.ArticleId = article.ArticleId;
+            av.VersionId = article.CurrentVersionId;
+            av.Comments = article.Comments;
             if (System.IO.File.Exists(v.ContentPath))
             {
                 string content = System.IO.File.ReadAllText(v.ContentPath, System.Text.Encoding.UTF8);
-                ViewBag.content = content;
-                return View(article);
+                ViewBag.content = Markdown.ToHtml(content, this.pipeline);
+                return View(av);
             }
-            return View(article);
+            return View(av);
         }
 
         // GET: Articles/Create
@@ -51,6 +72,11 @@ namespace DawtNetProject.Models
         {
             ArticleVersionViewModel avVM = new ArticleVersionViewModel();
             avVM.AllDomains = GetDomains();
+            if (!avVM.AllDomains.Any())
+            {
+                TempData["errorMessage"] = "Create at least one domain first.";
+                return RedirectToAction("Create", "Domains");
+            }
             return View(avVM);
         }
 
@@ -66,21 +92,29 @@ namespace DawtNetProject.Models
             Article a = new Article();
             Version v = new Version();
 
-            v.Title = avViewModel.Title;
-            List<Domain> ds = db.Domains.Where(d => avViewModel.DomainIds.Contains(d.Id)).ToList();
-            a.Domains = ds;
+            // domains
+            var ds = db.Domains.Where(d => avViewModel.DomainIds.Contains(d.Id));
+            if (avViewModel.DomainIds != null && avViewModel.DomainIds.Any())
+            {
+                if (ds != null && ds.Any())
+                {
+                    a.Domains = ds.ToList();
+                }
+                else
+                {
+                    ViewBag.Message = "Couldn't find selected domains.";
+                    return View(avViewModel);
+                }
+            }
 
-            a.ProtectFromEditing = false;
-
+            // write file contents
             if (avViewModel.ContentFile != null && avViewModel.ContentFile.ContentLength > 0)
             {
+
+                string content = ReadStream(avViewModel.ContentFile.InputStream, avViewModel.ContentFile.ContentLength);
                 try
                 {
-                    string path = Path.Combine(Server.MapPath("~/article_files"),
-                                                System.Guid.NewGuid().ToString() + ".md");
-
-                    avViewModel.ContentFile.SaveAs(path);
-                    v.ContentPath = path;
+                    v.ContentPath = WriteFile(content);
                 } catch (Exception e)
                 {
                     ViewBag.Message = "Error saving the file.";
@@ -91,14 +125,7 @@ namespace DawtNetProject.Models
             {
                 try
                 {
-                    string path = Path.Combine(Server.MapPath("~/article_files"),
-                                                System.Guid.NewGuid().ToString() + ".md");
-
-                    using (StreamWriter sw = new StreamWriter(path))
-                    {
-                        sw.Write(avViewModel.Content);
-                    }
-                    v.ContentPath = path;
+                    v.ContentPath = WriteFile(avViewModel.Content);
                 }
                 catch (Exception e)
                 {
@@ -111,18 +138,29 @@ namespace DawtNetProject.Models
                 return View(avViewModel);
             }
 
-            if (TryValidateModel(a) && TryValidateModel(v))
+
+            v.Title = avViewModel.Title;
+            a.ProtectFromEditing = false;
+
+
+            if (TryValidateModel(a))
             {
                 db.Articles.Add(a);
+                db.SaveChanges();
+
+                v.Article = a;
                 db.Versions.Add(v);
                 db.SaveChanges();
 
-                a.CurrentVersion = v;
-                v.Article = a;
+                a.CurrentVersionId = v.Id;
+                db.Entry(a).State = EntityState.Modified;
                 db.SaveChanges();
 
                 return RedirectToAction("Index");
             }
+
+            // if we're here, something failed
+            System.IO.File.Delete(v.ContentPath); // cleanup unused files
 
             return View(avViewModel);
         }
@@ -141,7 +179,7 @@ namespace DawtNetProject.Models
             }
 
 
-            Version v = article.CurrentVersion;
+            Version v = db.Versions.Find(article.CurrentVersionId);
             string content = "";
             if (System.IO.File.Exists(v.ContentPath))
             {
@@ -163,45 +201,75 @@ namespace DawtNetProject.Models
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(ArticleVersionViewModel avViewModel)
+        public ActionResult Edit(int id, ArticleVersionViewModel avViewModel)
         {
             avViewModel.AllDomains = GetDomains();
-            if (Request["articleId"] != null)
+            bool shouldUpdate = false;
+
+            Article article = db.Articles.Find(id);
+            if (article == null)
             {
-                int id = Int16.Parse(Request["articleId"]);
-                Article article = db.Articles.Find(id);
-                if (article == null)
-                {
-                    return HttpNotFound();
-                }
+                return HttpNotFound();
+            }
+            Version v = db.Versions.Find(article.CurrentVersionId);
 
-                List<Domain> ds = db.Domains.Where(d => avViewModel.DomainIds.Contains(d.Id)).ToList();
-                if (article.Domains != null)
+            // domains
+            var ds = db.Domains.Where(d => avViewModel.DomainIds.Contains(d.Id));
+            if (avViewModel.DomainIds != null && avViewModel.DomainIds.Any())
+            {
+                if (ds != null && ds.Any())
                 {
-                    List<Domain> l = ds.Where(p => !article.Domains.Contains(p)).ToList();
-                    foreach(var dom in l)
+                    if (article.Domains != null)
                     {
-                        article.Domains.Add(dom);
+                        List<Domain> l = ds.Where(p => !article.Domains.Contains(p)).ToList();
+                        foreach (var dom in l)
+                        {
+                            article.Domains.Add(dom);
+                            shouldUpdate = true;
+                        }
+                    } else
+                    {
+                        article.Domains = ds.ToList();
                     }
-                } else
-                {
-                    article.Domains = ds;
                 }
+                else
+                {
+                    ViewBag.Message = "Couldn't find selected domains.";
+                    return View(avViewModel);
+                }
+            }
 
+            if (v.Title != avViewModel.Title)
+            {
+                shouldUpdate = true;
+            }
 
-                // TODO: Check if there were actually any changes made.
-                Version v = new Version();
+            string newContents = "";
+            if (avViewModel.ContentFile != null && avViewModel.ContentFile.ContentLength > 0)
+            {
+                newContents = ReadStream(avViewModel.ContentFile.InputStream, avViewModel.ContentFile.ContentLength);
+            } else if (avViewModel.Content != null && avViewModel.Content.Length > 0)
+            {
+                newContents = avViewModel.Content;
+            }
 
-                v.Title = avViewModel.Title;
+            if (System.IO.File.Exists(v.ContentPath) && newContents != System.IO.File.ReadAllText(v.ContentPath, System.Text.Encoding.UTF8))
+            {
+                shouldUpdate = true;
+            }
+                
+            if (shouldUpdate)
+            {
+                Version newV = new Version();
+
+                newV.Title = avViewModel.Title;
                 if (avViewModel.ContentFile != null && avViewModel.ContentFile.ContentLength > 0)
                 {
+
                     try
                     {
-                        string path = Path.Combine(Server.MapPath("~/article_files"),
-                                                    System.Guid.NewGuid().ToString() + ".md");
-
-                        avViewModel.ContentFile.SaveAs(path);
-                        v.ContentPath = path;
+                        string content = ReadStream(avViewModel.ContentFile.InputStream, avViewModel.ContentFile.ContentLength);
+                        newV.ContentPath = WriteFile(content);
                     }
                     catch (Exception e)
                     {
@@ -214,14 +282,7 @@ namespace DawtNetProject.Models
                 {
                     try
                     {
-                        string path = Path.Combine(Server.MapPath("~/article_files"),
-                                                    System.Guid.NewGuid().ToString() + ".md");
-
-                        using (StreamWriter sw = new StreamWriter(path))
-                        {
-                            sw.Write(avViewModel.Content);
-                        }
-                        v.ContentPath = path;
+                        newV.ContentPath = WriteFile(avViewModel.Content);
                     }
                     catch (Exception e)
                     {
@@ -235,24 +296,92 @@ namespace DawtNetProject.Models
                     return View(avViewModel);
                 }
 
-                if (TryValidateModel(v))
+                if (TryValidateModel(newV))
                 {
-                    db.Versions.Add(v);
-                    db.SaveChanges();
+                    db.Versions.Attach(newV);
 
-                    article.CurrentVersion = v;
-                    v.Article = article;
-                    db.Entry(article).State = EntityState.Modified;
+                    newV.Article = article;
+                    db.Versions.Add(newV);
+                    db.SaveChanges();
+                    
+                    article.CurrentVersionId = newV.Id;
                     db.SaveChanges();
 
                     return RedirectToAction("Index");
                 }
+
+                System.IO.File.Delete(v.ContentPath);
                 return View(avViewModel);
             }
 
-            ModelState.AddModelError("ArticleNotFound", "Cannot find the id for the article you're trying to edit.");
             return View(avViewModel);
 
+        }
+
+        // GET: Articles/SetVersion/5/5
+        public ActionResult SetVersion(int? id, int? reference)
+        {
+            Article a = db.Articles.Find(id);
+            Version v = db.Versions.Find(reference);
+
+            if (a == null || v == null)
+            {
+                return HttpNotFound();
+            }
+
+            ArticleVersionViewModel av = new ArticleVersionViewModel();
+            
+            av.Title = v.Title;
+            av.ArticleId = a.ArticleId;
+            av.VersionId = v.Id;
+            ViewBag.currentVersionId = a.CurrentVersionId;
+
+            av.AllVersions = GetVersions(a.ArticleId);
+            if (System.IO.File.Exists(v.ContentPath))
+            {
+                string content = System.IO.File.ReadAllText(v.ContentPath, System.Text.Encoding.UTF8);
+                ViewBag.content = Markdown.ToHtml(content, this.pipeline);
+                return View(av);
+            }
+            return View(av);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult SetVersion(int id, int reference)
+        {
+            Article a = db.Articles.Find(id);
+            Version v = db.Versions.Find(reference);
+
+            if (a == null || v == null)
+            {
+                return HttpNotFound();
+            }
+
+            a.CurrentVersionId = v.Id;
+
+            if (TryValidateModel(a))
+            {
+                db.SaveChanges();
+                return RedirectToAction("Details", new { id = a.ArticleId });
+            }
+
+            ArticleVersionViewModel av = new ArticleVersionViewModel();
+
+            av.Title = v.Title;
+            av.ArticleId = a.ArticleId;
+            av.VersionId = v.Id;
+            ViewBag.currentVersionId = a.CurrentVersionId;
+
+            av.AllVersions = GetVersions(a.ArticleId);
+            if (System.IO.File.Exists(v.ContentPath))
+            {
+                string content = System.IO.File.ReadAllText(v.ContentPath, System.Text.Encoding.UTF8);
+                ViewBag.content = Markdown.ToHtml(content, this.pipeline);
+                return View(av);
+            }
+
+            return View(av);
         }
 
         // GET: Articles/Delete/5
@@ -263,11 +392,16 @@ namespace DawtNetProject.Models
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             Article article = db.Articles.Find(id);
+            Version v = db.Versions.Find(article.CurrentVersionId);
+            ArticleVersionViewModel av = new ArticleVersionViewModel();
+            av.Title = v.Title;
+            av.ArticleId = article.ArticleId;
+            av.VersionId = article.CurrentVersionId;
             if (article == null)
             {
                 return HttpNotFound();
             }
-            return View(article);
+            return View(av);
         }
 
         // POST: Articles/Delete/5
@@ -277,23 +411,27 @@ namespace DawtNetProject.Models
         {
             Article article = db.Articles.Find(id);
             var versions = from version in db.Versions
-                           where version.Article.Id == article.Id
+                           where version.Article.ArticleId == article.ArticleId
                            select version;
-            article.CurrentVersion = null;
+
             List<Version> vs = versions.ToList();
             foreach(Version v in vs)
             {
-                v.Article = null;
                 if (System.IO.File.Exists(v.ContentPath))
                 {
                     System.IO.File.Delete(v.ContentPath);
                 }
-            }
-            db.SaveChanges();
-
-            foreach(Version v in vs)
-            {
                 db.Versions.Remove(v);
+            }
+
+            var comments = from comment in db.Comments
+                           where comment.article.ArticleId == article.ArticleId
+                           select comment;
+            List<Comment> cmmts = comments.ToList();
+
+            foreach(Comment c in cmmts)
+            {
+                db.Comments.Remove(c);
             }
 
             db.Articles.Remove(article);
@@ -326,6 +464,56 @@ namespace DawtNetProject.Models
             }
 
             return selectList;
+        }
+
+        [NonAction]
+        public IEnumerable<SelectListItem> GetVersions(int articleId)
+        {
+            List<SelectListItem> selectList = new List<SelectListItem>();
+
+            var versions = from version in db.Versions 
+                           where version.Article.ArticleId == articleId
+                           select version;
+            foreach (var version in versions)
+            {
+                selectList.Add(new SelectListItem
+                {
+                    Value = version.Id.ToString(),
+                    Text = version.Title.ToString()
+                });
+            }
+
+            return selectList;
+        }
+
+        [NonAction]
+        private string WriteFile(string contents)
+        {
+            try
+            {
+                string path = Path.Combine(Server.MapPath("~/article_files"),
+                                            System.Guid.NewGuid().ToString() + ".md");
+
+                using (StreamWriter sw = new StreamWriter(path))
+                {
+                    sw.Write(contents);
+                }
+                return path;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [NonAction]
+        private string ReadStream(Stream inputStream, int contentLength)
+        {
+            BinaryReader b = new BinaryReader(inputStream);
+            byte[] binData = b.ReadBytes(contentLength);
+
+            string content = System.Text.Encoding.UTF8.GetString(binData);
+            return content;
         }
 
     }

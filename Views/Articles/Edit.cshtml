@@ -20,7 +20,7 @@
         <hr />
         @Html.ValidationSummary(false, "", new { @class = "text-danger" })
         <div class="form-group">
-            <div class="col-md-offset-2 col-md-12">
+            <div class="col-md-offset-2">
                 @Html.Label("Title")
                 <br />
                 @Html.TextBox("Title", null, new { @class = "form-control col-md-8" })
@@ -57,7 +57,7 @@
                 </div>
                 <br />
                 <br />
-                @Html.TextArea("Content", new { @id = "content_textarea", @class = "col-md-12" })
+                @Html.TextArea("Content", new { @id = "content_textarea", @class = "col-md-12 p-3" })
             </div>
             <br />
             <input type="submit" value="Edit" class="btn btn-primary" />
@@ -71,4 +71,5 @@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/create-article")
 }

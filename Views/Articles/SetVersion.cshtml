@@ -1,0 +1,67 @@
+﻿@model DawtNetProject.Models.ArticleVersionViewModel
+
+@{
+    ViewBag.Title = "Set version";
+}
+
+<div class="d-flex flex-row justify-content-between align-content-end">
+    <div>
+        <h2>@Model.Title</h2>
+
+        <div>
+            <div class="cold-m-4">
+                <h6>
+                    @if (Model.Domains != null)
+                    {
+                        List<string> domains = new List<string>();
+                        foreach (var d in Model.Domains)
+                        {
+                            domains.Add(@Html.ActionLink(d.Title, "Details", "Domains", new { id = d.Id }, new { @class = "text-secondary" }).ToHtmlString());
+                        }
+                        <span>@Html.Raw(String.Join(" | ", domains))</span>
+                    }
+                </h6>
+            </div>
+        </div>
+    </div>
+    @using (Html.BeginForm("SetVersion", "Articles", FormMethod.Post, new { @class = "d-flex flex-row", @style = "height: min-content" }))
+    {
+        @Html.AntiForgeryToken()
+
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-dark mr-2", @style = "width: 140pt" })
+
+        if (ViewBag.currentVersionId != null && Model.VersionId != ViewBag.currentVersionId)
+        {
+            <button type="submit" class="btn btn-primary mr-2" style="width: 160pt">Set as current</button>
+        }
+
+        @* Select other version *@
+        <select id="selected_version" class="form-control">
+            @foreach (var version in Model.AllVersions)
+            {
+                if (version.Value == Model.VersionId.ToString())
+                {
+                    <option value="/Articles/SetVersion/@Model.ArticleId/@version.Value" selected="selected" disabled="disabled">@version.Text</option>
+                }
+                else
+                {
+                    <option value="/Articles/SetVersion/@Model.ArticleId/@version.Value">@version.Text</option>
+                }
+            }
+        </select>
+    }
+</div>
+<hr />
+<div class="container border p-4 bg-light">
+    <div class="col-m-12">
+        @if (ViewBag.content != null)
+        {
+            @Html.Raw(ViewBag.content);
+        }
+    </div>
+
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/set-version")
+}
