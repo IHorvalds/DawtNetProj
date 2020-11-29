@@ -113,3 +113,6 @@ D:\Practice Apps\DawtNetProject\bin\Antlr3.Runtime.pdb
 D:\Practice Apps\DawtNetProject\obj\Debug\DawtNetProject.csproj.CopyComplete
 D:\Practice Apps\DawtNetProject\obj\Debug\DawtNetProject.dll
 D:\Practice Apps\DawtNetProject\obj\Debug\DawtNetProject.pdb
+D:\Practice Apps\DawtNetProject\bin\Markdown.dll
+D:\Practice Apps\DawtNetProject\obj\Debug\DawtNetProject.Migrations.Initial.resources
+D:\Practice Apps\DawtNetProject\obj\Debug\DawtNetProject.csproj.GenerateResource.cache

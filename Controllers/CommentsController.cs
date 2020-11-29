@@ -19,16 +19,38 @@ namespace DawtNetProject.Models
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Content,LastEdit")] Comment comment)
+        public ActionResult Create([Bind(Include = "Id,Content")] Comment comment)
         {
-            if (ModelState.IsValid)
+            if (Request["articleId"] != null)
             {
-                db.Comments.Add(comment);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                int id = Int16.Parse(Request["articleId"]);
+                Article article = db.Articles.Find(id);
+                if (article == null)
+                {
+                    return HttpNotFound();
+                }
+
+                if (TryValidateModel(comment))
+                {
+                    comment.LastEdit = DateTime.Now;
+                    comment.article = article;
+                    db.Comments.Add(comment);
+
+                    article.Comments.Add(comment);
+
+                    db.SaveChanges();
+
+                    return RedirectToAction("Details", "Articles", new { id = article.ArticleId });
+                } else
+                {
+                    return RedirectToAction("Details", "Articles", new { id = article.ArticleId });
+                }
+
+                
             }
 
-            return View(comment);
+
+            return RedirectToAction("Index", "Articles");
         }
 
         // POST: Comments/Edit/5
@@ -53,9 +75,11 @@ namespace DawtNetProject.Models
         public ActionResult DeleteConfirmed(int id)
         {
             Comment comment = db.Comments.Find(id);
+            Article a = comment.article;
+            a.Comments.Remove(comment);
             db.Comments.Remove(comment);
             db.SaveChanges();
-            return RedirectToAction("Index");
+            return RedirectToAction("Details", "Articles", new { id = a.ArticleId });
         }
 
         protected override void Dispose(bool disposing)

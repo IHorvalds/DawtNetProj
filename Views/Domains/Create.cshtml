@@ -6,6 +6,11 @@
 
 <h2>Create domain</h2>
 
+@if (TempData.ContainsKey("errorMessage"))
+{
+    <p class="text-danger">@TempData["errorMessage"]</p>
+}
+
 
 @using (Html.BeginForm()) 
 {

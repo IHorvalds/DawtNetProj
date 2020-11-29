@@ -4,39 +4,35 @@
     ViewBag.Title = "Details";
 }
 
-<h2>Details</h2>
-
-<div>
-    <h4>Version</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.VersionNumber)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.VersionNumber)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.ContentPath)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ContentPath)
-        </dd>
-
-    </dl>
+<div class="d-flex flex-row justify-content-between align-content-end">
+    <div class="d-flex flex-column align-content-start">
+        @Html.LabelFor(m => m.Title, new { @class = "display-6" })<br />
+        <h2>@Model.Title</h2>
+    </div>
+    <div class="d-flex flex-row" style="height: min-content">
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-dark" })
+        @if (Model.Article.CurrentVersionId != Model.Id)
+        {
+            using (Html.BeginForm(actionName: "SetVersion", controllerName: "Articles", new { id = Model.Article.ArticleId, reference = Model.Id }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <button class="btn btn-info ml-2 mr-2">Set as Current Version</button>
+            }
+        }
+        else
+        {
+            <div class="btn btn-outline-dark disabled ml-2 mr-2">This is the current version</div>
+        }
+        @Html.ActionLink("Delete", "Delete", new { id = Model.Id }, new { @class = "btn btn-danger" })
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
+<hr />
+<div class="container border p-4 bg-light">
+    <div class="col-m-12">
+        @if (ViewBag.content != null)
+        {
+            @Html.Raw(ViewBag.content);
+        }
+    </div>
+
+</div>
