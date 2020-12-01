@@ -1,0 +1,25 @@
+﻿@model IEnumerable<DawtNetProject.Models.ArticleVersionViewModel>
+
+@{
+    ViewBag.Title = "Search articles";
+}
+<div class="d-flex flex-row align-items-start justify-content-between">
+    <h2 class="mb-0 mr-3">Searching for <span class="text-secondary">@ViewBag.searchTerm</span></h2>
+    @Html.ActionLink("Back to list", "Index", null, new { @class = "btn btn-dark" })
+</div>
+<br />
+<div class="container p-0">
+    <div class="border p-4 d-flex flex-column align-items-center">
+        @if (Model.Any())
+        {
+            @Html.Partial("_ArticleList", Model)
+        } else
+        {
+            <p class="display-4">No articles found. :(</p>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/article-list")
+}

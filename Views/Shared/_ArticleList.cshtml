@@ -1,0 +1,33 @@
+﻿@model IEnumerable<DawtNetProject.Models.ArticleVersionViewModel>
+
+@foreach (var item in Model)
+{
+    <div class="row col-12 pb-0 mt-2 mb-2 table_button" data-url="/Articles/Details/@item.ArticleId">
+        <div class="col-12 d-flex flex-row justify-content-between align-items-center">
+            <div>
+                <h3>@item.Title <small class="text-secondary" style="font-size: 0.5em">@item.DatePublished.ToString("yyyy/MM/dd")</small></h3>
+                <div>
+                    <div class="cold-m-4">
+                        <h6>
+                            @if (item.Domains != null)
+                            {
+                                List<string> domains = new List<string>();
+                                foreach (var d in item.Domains)
+                                {
+                                    domains.Add(@Html.ActionLink(d.Title, "Details", "Domains", new { id = d.Id }, new { @class = "text-primary" }).ToHtmlString());
+                                }
+                                <span>@Html.Raw(String.Join(" | ", domains))</span>
+                            }
+                        </h6>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-muted">
+                <span class="mr-2">View</span>
+                <span><i class="fas fa-chevron-right"></i></span>
+            </div>
+        </div>
+        <hr class="mr-4 mt-0 mb-0" style="width: 90%; float: right;" />
+    </div>
+}

@@ -21,22 +21,51 @@ namespace DawtNetProject.Models
         public ActionResult Index()
         {
             var articles = from article in db.Articles
-                           select article;
+                           join version in db.Versions
+                           on article.CurrentVersionId equals version.Id
+                           select new { art = article, ver = version };
             List<ArticleVersionViewModel> avs = new List<ArticleVersionViewModel>();
             var articlesList = articles.ToList();
-            foreach(var article in articlesList)
+            foreach(var article_version in articlesList)
             {
                 ArticleVersionViewModel av = new ArticleVersionViewModel();
-                Version v = db.Versions.Find(article.CurrentVersionId);
-                av.ArticleId = article.ArticleId;
-                av.VersionId = article.CurrentVersionId;
-                av.Title = v.Title;
-                av.Content = System.IO.File.ReadAllText(v.ContentPath, System.Text.Encoding.UTF8);
-                av.Domains = article.Domains;
+                Version v = db.Versions.Find(article_version.art.CurrentVersionId);
+                av.ArticleId = article_version.art.ArticleId;
+                av.VersionId = article_version.art.CurrentVersionId;
+                av.Title = article_version.ver.Title;
+                av.Content = System.IO.File.ReadAllText(article_version.ver.ContentPath, System.Text.Encoding.UTF8);
+                av.Domains = article_version.art.Domains;
+                av.DatePublished = article_version.art.DatePublished;
                 avs.Add(av);
             }
 
             return View(avs);
+        }
+
+        public ActionResult Search()
+        {
+            ViewBag.searchTerm = Request["q"] ?? "";
+            string searchTerm = ViewBag.searchTerm;
+            List<ArticleVersionViewModel> avVMs = new List<ArticleVersionViewModel>();
+            var articles = from article in db.Articles
+                           join version in db.Versions
+                           on article.CurrentVersionId equals version.Id
+                           where version.Title.ToUpper().Contains(searchTerm.ToUpper())
+                           select new { art = article, ver = version };
+
+            var articlesList = articles.ToList();
+            foreach (var article_version in articlesList)
+            {
+                ArticleVersionViewModel av = new ArticleVersionViewModel();
+                av.ArticleId = article_version.art.ArticleId;
+                av.VersionId = article_version.art.CurrentVersionId;
+                av.Title = article_version.ver.Title;
+                av.Content = System.IO.File.ReadAllText(article_version.ver.ContentPath, System.Text.Encoding.UTF8);
+                av.Domains = article_version.art.Domains;
+                av.DatePublished = article_version.art.DatePublished;
+                avVMs.Add(av);
+            }
+            return View(avVMs);
         }
 
         // GET: Articles/Details/5
@@ -58,6 +87,9 @@ namespace DawtNetProject.Models
             av.ArticleId = article.ArticleId;
             av.VersionId = article.CurrentVersionId;
             av.Comments = article.Comments;
+            av.DatePublished = article.DatePublished;
+            av.LastEdit = v.LastEdit;
+            av.Domains = article.Domains;
             if (System.IO.File.Exists(v.ContentPath))
             {
                 string content = System.IO.File.ReadAllText(v.ContentPath, System.Text.Encoding.UTF8);
@@ -141,6 +173,8 @@ namespace DawtNetProject.Models
 
             v.Title = avViewModel.Title;
             a.ProtectFromEditing = false;
+            v.LastEdit = DateTime.Now;
+            a.DatePublished = DateTime.Now;
 
 
             if (TryValidateModel(a))
@@ -205,6 +239,7 @@ namespace DawtNetProject.Models
         {
             avViewModel.AllDomains = GetDomains();
             bool shouldUpdate = false;
+            bool addedDomain = false;
 
             Article article = db.Articles.Find(id);
             if (article == null)
@@ -214,18 +249,19 @@ namespace DawtNetProject.Models
             Version v = db.Versions.Find(article.CurrentVersionId);
 
             // domains
-            var ds = db.Domains.Where(d => avViewModel.DomainIds.Contains(d.Id));
+            var ds = db.Domains.Where(d => avViewModel.DomainIds.Contains(d.Id)).ToList();
             if (avViewModel.DomainIds != null && avViewModel.DomainIds.Any())
             {
                 if (ds != null && ds.Any())
                 {
                     if (article.Domains != null)
                     {
+                        //List<Domain> l = ds.Where(p => !article.Domains.Contains(p));
                         List<Domain> l = ds.Where(p => !article.Domains.Contains(p)).ToList();
                         foreach (var dom in l)
                         {
                             article.Domains.Add(dom);
-                            shouldUpdate = true;
+                            addedDomain = true;
                         }
                     } else
                     {
@@ -263,6 +299,7 @@ namespace DawtNetProject.Models
                 Version newV = new Version();
 
                 newV.Title = avViewModel.Title;
+                newV.LastEdit = DateTime.Now;
                 if (avViewModel.ContentFile != null && avViewModel.ContentFile.ContentLength > 0)
                 {
 
@@ -312,6 +349,15 @@ namespace DawtNetProject.Models
 
                 System.IO.File.Delete(v.ContentPath);
                 return View(avViewModel);
+            }
+
+            if (addedDomain)
+            {
+                if (TryValidateModel(article))
+                {
+                    db.SaveChanges();
+                    return RedirectToAction("Index");
+                }
             }
 
             return View(avViewModel);
@@ -422,16 +468,6 @@ namespace DawtNetProject.Models
                     System.IO.File.Delete(v.ContentPath);
                 }
                 db.Versions.Remove(v);
-            }
-
-            var comments = from comment in db.Comments
-                           where comment.article.ArticleId == article.ArticleId
-                           select comment;
-            List<Comment> cmmts = comments.ToList();
-
-            foreach(Comment c in cmmts)
-            {
-                db.Comments.Remove(c);
             }
 
             db.Articles.Remove(article);

@@ -14,7 +14,7 @@ namespace DawtNetProject.Models
         public string Content { get; set; }
         [Required]
         public DateTime LastEdit { get; set; }
-
+        [Required]
         public virtual Article article { get; set; }
     }
 }

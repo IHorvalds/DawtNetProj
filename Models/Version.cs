@@ -18,6 +18,7 @@ namespace DawtNetProject.Models
         [Required]
         [Display(Name = "File Path")]
         public string ContentPath { get; set; }
+        public DateTime LastEdit { get; set; }
         
         public virtual Article Article { get; set; }
 

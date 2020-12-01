@@ -1,3 +1,29 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿@model IEnumerable<DawtNetProject.Models.DomainArticleViewModel>
+
+@{
+    ViewBag.Title = "Welcome to WikiPaedia";
+}
+
+<h2 class="display-4">Newest articles</h2>
+
+<div class="container p-0">
+    @foreach (var daVM in Model)
+    {
+        if (daVM.articles.Count > 0)
+        {
+            <div class="d-flex flex-column p-0">
+                <p class="lead">@Html.ActionLink(daVM.DomainName, actionName: "Details", controllerName: "Domains", routeValues: new { id = daVM.DomainId }, null)  &nbsp;|&nbsp;
+                    <span class="text-muted">@daVM.LastArticlePublishDate.ToString("yyyy/MM/dd")</span> 
+                </p> 
+                <div class="border p-4 d-flex flex-column align-items-center">
+                    @Html.Partial("_ArticleList", daVM.articles)
+                </div>
+                <hr />
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/article-list")
 }
