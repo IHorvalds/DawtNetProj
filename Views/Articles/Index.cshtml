@@ -3,32 +3,22 @@
 @{
     ViewBag.Title = "All available articles";
 }
-<div class="d-flex flex-row align-items-start">
+<div class="d-flex flex-row align-items-start justify-content-between">
     <div class="d-flex flex-column mr-3">
         <h2 class="mb-0">Here are all the articles</h2>
-        <h5>Stand on the shoulders of giants.</h5>
+        <h5 class="lead">Stand on the shoulders of giants.</h5>
     </div>
     <div class="p-2">
-        @Html.ActionLink("Add another article", "Create" , new { @area = "" }, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Add another article", "Create", new { @area = "" }, new { @class = "btn btn-link border rounded" })
     </div>
 </div>
-<table class="table">
-    <tr>
-        <th></th>
-    </tr>
+<br />
+<div class="container p-0">
+    <div class="border p-4 d-flex flex-column align-items-center">
+        @Html.Partial("_ArticleList", Model)
+    </div>
+</div>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @item.Title
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id = item.ArticleId }) |
-            @Html.ActionLink("Set version", "SetVersion", new { id = item.ArticleId, reference = item.VersionId }) |
-            @Html.ActionLink("Details", "Details", new { id = item.ArticleId }) |
-            @Html.ActionLink("Delete", "Delete", new { id = item.ArticleId })
-        </td>
-    </tr>
+@section Scripts {
+    @Scripts.Render("~/bundles/article-list")
 }
-
-</table>

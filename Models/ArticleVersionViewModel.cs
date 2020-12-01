@@ -14,6 +14,8 @@ namespace DawtNetProject.Models
         [Required(ErrorMessage = "Your article has to have a title.")]
         public string Title { get; set; }
         public string Content { get; set; }
+        public DateTime DatePublished { get; set; }
+        public DateTime LastEdit { get; set; }
         public HttpPostedFileBase ContentFile { get; set; }
         public int[] DomainIds { get; set; }
         public virtual ICollection<Domain> Domains { get; set; }

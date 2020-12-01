@@ -17,6 +17,10 @@ namespace DawtNetProject
                         "~/Scripts/create-article.js"));
             bundles.Add(new ScriptBundle("~/bundles/set-version").Include(
                         "~/Scripts/set-version.js"));
+            bundles.Add(new ScriptBundle("~/bundles/article-list").Include(
+                        "~/Scripts/article-list.js"));
+            bundles.Add(new ScriptBundle("~/bundles/extract-chapters").Include(
+                        "~/Scripts/extract-chapters.js"));
 
             // Use the development version of Modernizr to develop with and learn from. Then, when you're
             // ready for production, use the build tool at https://modernizr.com to pick only the tests you need.
@@ -29,7 +33,8 @@ namespace DawtNetProject
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                       "~/Content/Site.css",
-                      "~/Content/site.css"));
+                      "~/Content/site.css",
+                      "~/Content/ArticleList.css"));
                       //"~/Content/sakura.css"));
         }
     }

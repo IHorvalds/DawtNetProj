@@ -226,6 +226,7 @@
     <Compile Include="Controllers\CommentsController.cs" />
     <Compile Include="Models\Domain.cs" />
     <Compile Include="Controllers\DomainsController.cs" />
+    <Compile Include="Models\DomainArticleViewModel.cs" />
     <Compile Include="Models\Version.cs" />
     <Compile Include="Controllers\VersionsController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -239,6 +240,7 @@
     <Content Include="App_Data\DawtNetDB_log.ldf">
       <DependentUpon>DawtNetDB.mdf</DependentUpon>
     </Content>
+    <Content Include="Content\ArticleList.css" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-reboot.css" />
@@ -249,6 +251,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="Scripts\article-list.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.js" />
@@ -258,6 +261,7 @@
     <Content Include="Scripts\esm\popper-utils.min.js" />
     <Content Include="Scripts\esm\popper.js" />
     <Content Include="Scripts\esm\popper.min.js" />
+    <Content Include="Scripts\extract-chapters.js" />
     <Content Include="Scripts\index.js.flow" />
     <Content Include="Scripts\esm\popper.min.js.map" />
     <Content Include="Scripts\esm\popper.js.map" />
@@ -393,15 +397,15 @@
     <Content Include="Views\Versions\Create.cshtml" />
     <Content Include="Views\Versions\Delete.cshtml" />
     <Content Include="Views\Versions\Details.cshtml" />
-    <Content Include="Views\Versions\Edit.cshtml" />
     <Content Include="Views\Versions\Index.cshtml" />
     <Content Include="Views\Comments\Create.cshtml" />
     <Content Include="Views\Comments\Delete.cshtml" />
     <Content Include="Views\Comments\Details.cshtml" />
     <Content Include="Views\Comments\Edit.cshtml" />
     <Content Include="Views\Comments\Index.cshtml" />
-    <Content Include="Views\Shared\Header.cshtml" />
     <Content Include="Views\Articles\SetVersion.cshtml" />
+    <Content Include="Views\Shared\_ArticleList.cshtml" />
+    <Content Include="Views\Articles\Search.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="article_files\" />

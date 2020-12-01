@@ -6,7 +6,13 @@
 
 <div class="d-flex flex-row justify-content-between align-content-end">
     <div>
-        <h2>@Model.Title</h2>
+        <div class="d-flex flex-column">
+            <h2>@Model.Title</h2>
+            <div style="display:grid; grid-template-columns: 1fr auto;">
+                <h6 class="text-muted">Published:</h6> <h6 class="text-light bg-dark rounded pr-2 pl-2">@Model.DatePublished.ToString("yyyy/MM/dd")</h6>
+                <h6 class="text-muted">Last edit:</h6> <h6 class="text-light bg-dark rounded pr-2 pl-2">@Model.LastEdit.ToString("yyyy/MM/dd")</h6>
+            </div>
+        </div>
 
         <div>
             <div class="cold-m-4">
@@ -18,18 +24,24 @@
                         {
                             domains.Add(@Html.ActionLink(d.Title, "Details", "Domains", new { id = d.Id }, new { @class = "text-secondary" }).ToHtmlString());
                         }
-                        <span>@Html.Raw(String.Join(" | ", domains))</span>
+                        @Html.Raw("Domains: ")<span>@Html.Raw(String.Join(" | ", domains))</span>
                     }
                 </h6>
             </div>
         </div>
     </div>
-    <p>
-        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-dark mr-2" })
-        @Html.ActionLink("Edit", "Edit", new { id = Model.ArticleId }, new { @class = "btn btn-info mr-2" })
-        @Html.ActionLink("Set version", "SetVersion", new { id = Model.ArticleId, reference = Model.VersionId }, new { @class = "btn btn-info mr-2" })
+    <div class="btn-group" style="height:min-content">
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-dark" })
+        @Html.ActionLink("Edit", "Edit", new { id = Model.ArticleId }, new { @class = "btn btn-link border-top border-bottom" })
+        @Html.ActionLink("Set version", "SetVersion", new { id = Model.ArticleId, reference = Model.VersionId }, new { @class = "btn btn-link border-top border-bottom" })
         @Html.ActionLink("Delete", "Delete", new { id = Model.ArticleId }, new { @class = "btn btn-danger" })
-    </p>
+    </div>
+</div>
+<hr />
+<div class="d-flex flex-column col-6 bg-light border">
+    <h5>Chapters</h5>
+    <ol id="article_chapters">
+    </ol>
 </div>
 <hr />
 <div class="container border p-4 bg-light">
@@ -47,26 +59,26 @@
 <div class="container">
     @if (Model.Comments != null && Model.Comments.Count() > 0)
     {
-    <div class="row d-flex flex-column">
-        @foreach (var comment in Model.Comments)
-        {
-        <div class="border rounded-lg d-flex flex-column justify-content-end col-6 p-2 mb-3">
-            @Html.TextAreaFor(modelItem => comment.Content, new { @class = " text-body disabled", @style = "border: none; word-break: break-word; rows: 3; resize: none;", @readonly = "readonly" })
-            <hr style="width: 100%; margin: 8px auto" />
-            @using (Html.BeginForm(actionName: "Delete", controllerName: "Comments", routeValues: new { id = comment.Id }, FormMethod.Post, new { @style = "width:100%;", @class = "d-flex flex-row justify-content-end align-content-center" }))
+        <div class="row d-flex flex-column">
+            @foreach (var comment in Model.Comments)
             {
-                @Html.AntiForgeryToken()
-                <div class="text-muted mr-2 d-flex flex-row align-items-center" style="font-size: 8pt"><div>@Html.DisplayFor(modelItem => comment.LastEdit)</div></div><span>|</span>
-                <button type="submit" class="btn btn-danger btn-sm ml-2" style="font-size: 8pt">Delete</button>
-            }
+                <div class="border rounded-lg d-flex flex-column justify-content-end col-6 p-2 mb-3">
+                    @Html.TextAreaFor(modelItem => comment.Content, new { @class = " text-body disabled", @style = "border: none; word-break: break-word; rows: 3; resize: none;", @readonly = "readonly" })
+                    <hr style="width: 100%; margin: 8px auto" />
+                    @using (Html.BeginForm(actionName: "Delete", controllerName: "Comments", routeValues: new { id = comment.Id }, FormMethod.Post, new { @style = "width:100%;", @class = "d-flex flex-row justify-content-end align-content-center" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="text-muted mr-2 d-flex flex-row align-items-center" style="font-size: 8pt"><div>@Html.DisplayFor(modelItem => comment.LastEdit)</div></div><span>|</span>
+                        <button type="submit" class="btn btn-danger btn-sm ml-2" style="font-size: 8pt">Delete</button>
+                    }
 
+                </div>
+            }
         </div>
-        }
-    </div>
     }
 
     <div class="row">
-        @using (Html.BeginForm(actionName: "Create", controllerName: "Comments", FormMethod.Post, new { @style = "width:100%;" } ))
+        @using (Html.BeginForm(actionName: "Create", controllerName: "Comments", FormMethod.Post, new { @style = "width:100%;" }))
         {
             @Html.AntiForgeryToken()
             @Html.Hidden("articleId", Model.ArticleId)
@@ -81,3 +93,7 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/extract-chapters")
+}

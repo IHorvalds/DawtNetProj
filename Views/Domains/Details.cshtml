@@ -1,67 +1,107 @@
-﻿@model DawtNetProject.Models.Domain
+﻿@model DawtNetProject.Models.DomainArticleViewModel
 
 @{
     ViewBag.Title = "Details";
 }
 
-<h2>Details</h2>
-
-<div>
-    <h4>Domain</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.LastEdit)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.LastEdit)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Articles)
-        </dt>
-
-        <dd>
-            @if (Model.Articles != null)
-            {
-                foreach (var article in Model.Articles)
-                {
-                    <tr>
-                        <td>
-                            @article.CurrentVersion.Title
-                        </td>
-                        <td>
-                            @Html.ActionLink("Edit", "Edit", new { id = article.Id }) |
-                            @Html.ActionLink("Details", "Details", new { id = article.Id }) |
-                            @Html.ActionLink("Delete", "Delete", new { id = article.Id })
-                        </td>
-                    </tr>
-                }
-            } else
-            {
-                <p>None yet.</p>
-            }
-        </dd>
-    </dl>
+<div class="d-flex flex-row justify-content-between align-items-end">
+    <h2>@Model.DomainName</h2>
+    <div class="btn-group" style="height:min-content">
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-dark" })
+        @Html.ActionLink("Edit", "Edit", new { id = Model.DomainId }, new { @class = "btn btn-link border" })
+        @Html.ActionLink("Delete", "Delete", new { id = Model.DomainId }, new { @class = "btn btn-danger" })
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
+<div class="d-flex flex-column align-items-start justify-content-start col-6 p-0">
+    <hr class="ml-0" style="width: 40%;" />
+    <h4 class="text-secondary">Description</h4>
+    <h6 class="text-body">@Model.DomainDescription</h6>
+</div>
+<br />
+<h4 class="text-secondary">
+    Articles
+</h4>
+<div class="container p-0">
+    @if (Model.articles.Count > 0)
+    {
+        <div class="d-flex flex-row justify-content-between align-items-end">
+            <h6 class="text-body">Last published on <span class="text-light bg-dark pr-2 pl-2 rounded">@Model.LastArticlePublishDate.ToString("yyyy/MM/dd")</span></h6>
+            <div class="d-flex flex-row align-items-center">
+                <h6 class="text-muted m-0">Sort by</h6>
+                @if (ViewBag.orderby != null && ViewBag.orderby == "date")
+                {
+                    if (ViewBag.asc == "asc")
+                    {
+                        <div class="d-flex flex-row align-items-center">
+                            <a href="/Domains/Details/@Model.DomainId?orderby=date&asc=desc" class="btn btn-link mr-1 border-bottom text-success">
+                                Publish date
+                                <span class="text-success ml-1"><i class="fas fa-chevron-up"></i></span>
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-row align-items-center">
+                            <a href="/Domains/Details/@Model.DomainId?orderby=date&asc=asc" class="btn btn-link mr-1 border-bottom text-info">
+                                Publish date
+                                <span class="text-info ml-1"><i class="fas fa-chevron-down"></i></span>
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="d-flex flex-row align-items-center">
+                        <a href="/Domains/Details/@Model.DomainId?orderby=date&asc=asc" class="btn btn-link mr-1 border-bottom">Publish date<span class="text-primary ml-1"><i class="fas fa-circle"></i></span></a>
+                    </div>
+                }
+
+                <div>|</div>
+                @if (ViewBag.orderby != null && ViewBag.orderby == "title")
+                {
+                    if (ViewBag.asc == "asc")
+                    {
+                        <div class="d-flex flex-row align-items-center">
+                            <a href="/Domains/Details/@Model.DomainId?orderby=title&asc=desc" class="btn btn-link mr-1 border-bottom text-success">
+                                Title
+                                <span class="text-success ml-1"><i class="fas fa-chevron-up"></i></span>
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-row align-items-center">
+                            <a href="/Domains/Details/@Model.DomainId?orderby=title&asc=asc" class="btn btn-link mr-1 border-bottom text-info">
+                                Title
+                                <span class="text-info ml-1"><i class="fas fa-chevron-down"></i></span>
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="d-flex flex-row align-items-center">
+                        <a href="/Domains/Details/@Model.DomainId?orderby=title&asc=asc" class="btn btn-link mr-1 border-bottom">
+                            Title
+                            <span class="text-primary ml-1"><i class="fas fa-circle"></i></span>
+                        </a>
+                    </div>
+                }
+                
+            </div>
+        </div>
+        
+        <div class="border p-4 d-flex flex-column align-items-center">
+            @Html.Partial("_ArticleList", Model.articles)
+        </div>
+        <hr />
+    }
+    else
+    {
+        <p class="display-4">No articles yet.</p>
+    }
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/article-list")
+}

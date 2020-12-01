@@ -8,6 +8,7 @@
     <div class="d-flex flex-column align-content-start">
         @Html.LabelFor(m => m.Title, new { @class = "display-6" })<br />
         <h2>@Model.Title</h2>
+        <h6>Article ID: <span class="text-secondary">@Html.ActionLink(Model.Article.ArticleId.ToString(), "Details", "Articles", new { id = Model.Article.ArticleId }, null)</span></h6>
     </div>
     <div class="d-flex flex-row" style="height: min-content">
         @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-dark" })

@@ -29,11 +29,11 @@ namespace DawtNetProject.Models
                 {
                     return HttpNotFound();
                 }
-
+                comment.LastEdit = DateTime.Now;
+                comment.article = article;
+                ModelState.Remove("article");
                 if (TryValidateModel(comment))
                 {
-                    comment.LastEdit = DateTime.Now;
-                    comment.article = article;
                     db.Comments.Add(comment);
 
                     article.Comments.Add(comment);

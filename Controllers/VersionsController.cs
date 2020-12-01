@@ -77,6 +77,7 @@ namespace DawtNetProject.Models
                 version.Article = a;
             }
 
+            version.LastEdit = DateTime.Now;
             if (TryValidateModel(version))
             {
                 db.Versions.Add(version);

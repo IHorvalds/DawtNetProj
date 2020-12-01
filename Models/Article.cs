@@ -15,6 +15,7 @@ namespace DawtNetProject.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ArticleId { get; set; }
         public bool ProtectFromEditing { get; set; }
+        public DateTime DatePublished { get; set; }
         
         [Required]
         public virtual ICollection<Domain> Domains { get; set; }
